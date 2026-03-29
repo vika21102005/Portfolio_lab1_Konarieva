@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Контакти">
+<meta name="author" content="Student">
+<title>Контакти — Портфоліо</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<div class="page">
+<header  class="header">
+
+<h1>Контакти</h1>
+
+<nav>
+<ul>
+<li><a href="index.html">Головна</a></li>
+<li><a href="about.html">Про мене</a></li>
+<li><a href="contacts.html">Контакти</a></li>
+</ul>
+</nav>
+
+</header>
+
+<aside class="sidebar">
+Навігація
+</aside>
+
+<main class="content">
+
+<section>
+
+<h2>Мої контакти</h2>
+
+<p>Email:
+<a href="mailto:21konareva@gmail.com">21konareva@gmail.com</a>
+</p>
+
+<p>Телефон:
+<a href="tel:+380507870405">+3800507870405</a>
+</p>
+
+</section>
+
+<section>
+
+<h2>Форма зворотного зв'язку</h2>
+
+<form action="#" method="post">
+
+<fieldset>
+<legend>Контактна інформація</legend>
+
+<label for="name">Ім'я:</label>
+<input type="text" id="name" name="name" placeholder="Ваше ім'я" required>
+
+<br><br>
+
+<label for="email">Email:</label>
+<input type="email" id="email" name="email" placeholder="email@example.com" required>
+
+</fieldset>
+
+<fieldset>
+
+<legend>Повідомлення</legend>
+
+<label for="subject">Тема:</label>
+
+<select id="subject" name="subject" required>
+
+<option value="">Оберіть тему</option>
+<option value="question">Питання</option>
+<option value="cooperation">Співпраця</option>
+
+</select>
+
+<p>Тип звернення:</p>
+
+<label>
+<input type="radio" name="type" value="question"> Питання
+</label>
+
+<label>
+<input type="radio" name="type" value="suggestion"> Пропозиція
+</label>
+
+<br><br>
+
+<label for="message">Повідомлення:</label>
+<br>
+
+<textarea id="message" name="message" rows="5" placeholder="Ваше повідомлення"></textarea>
+
+</fieldset>
+
+<label>
+<input type="checkbox" name="consent" required>
+Я погоджуюсь на обробку даних
+</label>
+
+<br><br>
+
+<button type="submit">Надіслати</button>
+
+</form>
+
+</section>
+
+</main>
+
+<footer class="footer">
+<p>© 2026 Вікторія Конарєва</p>
+</footer>
+
+</body>
+</div>
+</html>
