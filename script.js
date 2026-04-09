@@ -198,3 +198,189 @@ document.getElementById('output').innerHTML = `
     <p><b>Статус:</b> ${status}</p>
     <p>Більше деталей дивіться у консолі (F12).</p>
 `;
+
+// === ЛАБОРАТОРНА РОБОТА №5: DOM, Події та API ===
+
+// 1. Ініціалізація змінних (Вимога 2.1)
+const taskList = document.getElementById('taskList');
+const todoForm = document.getElementById('todoForm');
+const todoInput = document.getElementById('todoInput');
+const addBtn = document.getElementById('addBtn');
+const loader = document.getElementById('loader');
+const searchInput = document.getElementById('searchInput');
+const filterSelect = document.getElementById('filterSelect');
+const activeCountSpan = document.getElementById('activeCount');
+
+// 2. Функція відображення лоадера
+const toggleLoader = (show) => loader.style.display = show ? 'block' : 'none';
+
+// 3. Функція створення DOM-елемента завдання (Вимоги 2.2, 2.3)
+function createTaskElement(task) {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.style = `display: flex; align-items: center; justify-content: space-between; 
+                padding: 10px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px;`;
+    li.dataset.id = task.id; // Збереження ID в data-атрибуті (Вимога 2.2)
+
+    if (task.completed) li.style.opacity = '0.6';
+
+    li.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+            <span class="task-title" style="${task.completed ? 'text-decoration: line-through;' : ''}">
+                ${task.title}
+            </span>
+        </div>
+        <button class="delete-btn" style="background: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Видалити</button>
+    `;
+    return li;
+}
+
+// 4. Отримання даних з API (Вимога 4.5: async/await + Promise.all)
+async function fetchInitialData() {
+    toggleLoader(true);
+    try {
+        // Використовуємо Promise.all для паралельних запитів (наприклад, завдання + дані користувача)
+        const [tasksRes, userRes] = await Promise.all([
+            fetch('https://jsonplaceholder.typicode.com/todos?_limit=10'),
+            fetch('https://jsonplaceholder.typicode.com/users/1')
+        ]);
+
+        const tasks = await tasksRes.json();
+        const user = await userRes.json();
+        
+        console.log(`Вітаємо, ${user.name}! Ваші завдання завантажено.`);
+        
+        tasks.forEach(task => {
+            taskList.appendChild(createTaskElement(task));
+        });
+        updateStats();
+    } catch (error) {
+        console.error("Помилка завантаження:", error);
+        alert("Не вдалося завантажити дані з сервера.");
+    } finally {
+        toggleLoader(false);
+    }
+}
+
+// 5. Обробка подій клавіатури (Вимога 3.5, 5.2)
+todoInput.addEventListener('input', () => {
+    // Кнопка стає активною тільки якщо введено текст
+    addBtn.disabled = !todoInput.value.trim();
+});
+
+todoInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        todoInput.value = '';
+        addBtn.disabled = true;
+    }
+});
+
+// 6. Додавання нового завдання (Вимога 4.3: POST запит)
+todoForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = todoInput.value.trim();
+    if (!title) return;
+
+    toggleLoader(true);
+    try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/todos', {
+            method: 'POST',
+            body: JSON.stringify({ title, completed: false, userId: 1 }),
+            headers: { 'Content-type': 'application/json; charset=UTF-8' }
+        });
+        const newTask = await response.json();
+        
+        // Оскільки API фейкове, воно завжди повертає ID 201. 
+        // Для коректної роботи в DOM згенеруємо унікальний ID.
+        newTask.id = Date.now();
+        
+        taskList.prepend(createTaskElement(newTask));
+        todoForm.reset();
+        addBtn.disabled = true;
+        updateStats();
+    } catch (err) {
+        alert("Помилка при збереженні завдання");
+    } finally {
+        toggleLoader(false);
+    }
+});
+
+// 7. Делегування подій (Вимога 3.1)
+taskList.addEventListener('click', async (e) => {
+    const li = e.target.closest('.task-item');
+    if (!li) return;
+    const taskId = li.dataset.id;
+
+    // Видалення (Вимога 4.4: DELETE запит)
+    if (e.target.classList.contains('delete-btn')) {
+        li.style.background = '#ffe6e6'; // Візуальний ефект перед видаленням
+        try {
+            await fetch(`https://jsonplaceholder.typicode.com/todos/${taskId}`, { method: 'DELETE' });
+            li.remove();
+            updateStats();
+        } catch (err) { alert("Не вдалося видалити"); }
+    }
+
+    // Зміна статусу (Вимога 4.3: PATCH запит)
+    if (e.target.classList.contains('task-checkbox')) {
+        const isCompleted = e.target.checked;
+        const titleSpan = li.querySelector('.task-title');
+        
+        try {
+            await fetch(`https://jsonplaceholder.typicode.com/todos/${taskId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ completed: isCompleted }),
+                headers: { 'Content-type': 'application/json; charset=UTF-8' }
+            });
+            
+            titleSpan.style.textDecoration = isCompleted ? 'line-through' : 'none';
+            li.style.opacity = isCompleted ? '0.6' : '1';
+            updateStats();
+        } catch (err) { 
+            e.target.checked = !isCompleted; // Відкат стану чекбокса при помилці
+            alert("Помилка оновлення статусу"); 
+        }
+    }
+});
+
+// 8. Пошук та фільтрація (Вимоги 3.3, 4.1)
+function applyFilters() {
+    const searchText = searchInput.value.toLowerCase();
+    const filterValue = filterSelect.value;
+    const items = taskList.querySelectorAll('.task-item');
+
+    items.forEach(item => {
+        const title = item.querySelector('.task-title').textContent.toLowerCase();
+        const isCompleted = item.querySelector('.task-checkbox').checked;
+
+        const matchesSearch = title.includes(searchText);
+        let matchesFilter = true;
+
+        if (filterValue === 'active') matchesFilter = !isCompleted;
+        if (filterValue === 'completed') matchesFilter = isCompleted;
+
+        item.style.display = (matchesSearch && matchesFilter) ? 'flex' : 'none';
+    });
+}
+
+// Реалізація Debounce для пошуку (Вимога 3.3)
+function debounce(func, delay) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+searchInput.addEventListener('input', debounce(applyFilters, 300));
+filterSelect.addEventListener('change', applyFilters);
+
+// 9. Оновлення лічильника
+function updateStats() {
+    const count = taskList.querySelectorAll('.task-checkbox:not(:checked)').length;
+    activeCountSpan.textContent = count;
+}
+
+// Запуск програми
+fetchInitialData();

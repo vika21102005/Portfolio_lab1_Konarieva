@@ -95,6 +95,34 @@
         <h2 style="color: #000;">Результати ЛР №4</h2>
         <div id="output" style="color: #333;"></div>
     </section>
+    <section id="todo-section">
+    <h2>Лабораторна робота №5: Task Manager</h2>
+    
+    <div class="todo-app">
+        <div class="todo-controls">
+            <input type="text" id="searchInput" placeholder="Пошук завдань (debounce)..." class="search-input">
+            
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Всі</button>
+                <button class="filter-btn" data-filter="active">Активні</button>
+                <button class="filter-btn" data-filter="completed">Виконані</button>
+            </div>
+        </div>
+
+        <form id="todoForm" class="todo-form">
+            <input type="text" id="todoInput" placeholder="Введіть текст завдання..." required>
+            <button type="submit" id="addBtn" disabled>Додати</button>
+        </form>
+
+        <div id="loader" class="loader hidden">Завантаження даних...</div>
+
+        <ul id="taskList" class="task-list"></ul>
+
+        <div class="todo-stats">
+            Активних завдань: <span id="activeCount">0</span>
+        </div>
+    </div>
+</section>
 
     <script src="script.js"></script>
 </body>
